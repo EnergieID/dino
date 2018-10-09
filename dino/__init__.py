@@ -1,0 +1,1 @@
+from .client import DinoClient, __version__
