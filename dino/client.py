@@ -65,7 +65,7 @@ class DinoClient:
         pd.DataFrame
         """
         j = self.get_data_raw(start=start, end=end)
-        df = self.dict_to_df(d=j)
+        df = self.dict_to_df(d=j, columns=columns)
         return df
 
     @staticmethod
