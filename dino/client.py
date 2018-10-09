@@ -22,18 +22,18 @@ class DinoClient:
         #    "Content-Type": "application/json"
         #})
 
-    def get_data(self, start, end):
+    def get_data_raw(self, start, end):
         """
-        Get data and parse them into a flat DataFrame
+        Get data and return the response as dict
+
         Parameters
         ----------
         start : pd.Timestamp
         end : pd.Timestamp
         Returns
         -------
-        pd.DataFrame
+        dict
         """
-
         data = {
             'userName': self.username,
             'seriale': self.serial,
@@ -46,12 +46,33 @@ class DinoClient:
         self.session.verify = False
         r = self.session.post(url=URL, json=data)
         r.raise_for_status()
+        j = r.json()
+        return j
 
-        return self.map_json(r.json())
-
-
-    def map_json(self, json):
+    def get_data(self, start, end, columns=None):
         """
+        Get data and return as a parsed Pandas DataFrame
+
+        Parameters
+        ----------
+        start : pd.Timestamp
+        end : pd.Timestamp
+        columns : [str], optional
+                select only specific entries to use
+
+        Returns
+        -------
+        pd.DataFrame
+        """
+        j = self.get_data_raw(start=start, end=end)
+        df = self.dict_to_df(d=j)
+        return df
+
+    @staticmethod
+    def dict_to_df(d, columns=None):
+        """
+        Parse dict to Pandas DataFrame
+
         Possible values:
             - "E0":[] produced energy as counter (i.e. [32036140,1518908534] first value is the counter, second value is unix time timestamp)
             - "DE0":[] produced energy as difference with the previous sample
@@ -65,29 +86,38 @@ class DinoClient:
             - DailyDE0, etc.: daily difference for the various measures
             - HourlyDE0 etc.: hourly difference for the various measures
 
-        :param json: dict with the values described above
-        :return: pd.DataFrame
+        Parameters
+        ----------
+        d : dict
+            dict with the values described above
+        columns : [str], optional
+                select only specific entries to use
+
+        Returns
+        -------
+        pd.DataFrame
         """
-        columns = ['production', 'timestamp']
-        production = pd.DataFrame(json['DailyDE0'], columns=columns).set_index('timestamp')
-        production.index = production.index.map(lambda v: pd.to_datetime(v, unit='s'))
+        def gen_series(_d):
+            for key, val in _d.items():
+                try:
+                    ts = pd.DataFrame(val)
+                except ValueError:
+                    continue
+                if ts.empty:
+                    yield pd.Series(name=key)
+                else:
+                    ts.set_index(1, drop=True, inplace=True)
+                    ts = ts[0]  # go from dataframe to series
+                    ts.index = ts.index.map(lambda v: pd.to_datetime(v, unit='s'))
 
-        # injection
-        columns = ['injection', 'timestamp']
-        injection = pd.DataFrame(json['DailyDE1'], columns=columns).set_index('timestamp')
-        injection.index = injection.index.map(lambda v: pd.to_datetime(v, unit='s'))
+                    ts.index.name = None
+                    ts.name = key
 
-        # consumption F1
-        columns = ['consumption_F1', 'timestamp']
-        consumption_F1 = pd.DataFrame(json['DailyDET0'], columns=columns).set_index('timestamp')
-        consumption_F1.index = consumption_F1.index.map(lambda v: pd.to_datetime(v, unit='s'))
-        # consumption F2
-        columns = ['consumption_F2', 'timestamp']
-        consumption_F2 = pd.DataFrame(json['DailyDET1'], columns=columns).set_index('timestamp')
-        consumption_F2.index = consumption_F2.index.map(lambda v: pd.to_datetime(v, unit='s'))
-        # consumption F3
-        columns = ['consumption_F3', 'timestamp']
-        consumption_F3 = pd.DataFrame(json['DailyDET2'], columns=columns).set_index('timestamp')
-        consumption_F3.index = consumption_F3.index.map(lambda v: pd.to_datetime(v, unit='s'))
+                    yield ts
 
-        return pd.concat([production, injection, consumption_F1, consumption_F2, consumption_F3], axis=1)
+        if columns is not None:
+            d = {key: d[key] for key in d if key in columns}
+
+        df = pd.concat(gen_series(_d=d), axis=1)
+
+        return df
