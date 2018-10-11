@@ -1,1 +1,1 @@
-from .client import DinoClient, __version__
+from .client import RawDinoClient, PandasDinoClient, __version__
