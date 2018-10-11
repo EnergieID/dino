@@ -84,13 +84,13 @@ class PandasDinoClient(RawDinoClient):
         if columns is not None:
             d = {key: d[key] for key in d if key in columns}
 
-        series = self.dict_to_series(d)
+        series = self._dict_to_series(d)
         df = pd.concat(series, axis=1)
 
         return df
 
     @staticmethod
-    def dict_to_series(d):
+    def _dict_to_series(d):
         """
         Generates a Pandas Series for each element in the dict
 
