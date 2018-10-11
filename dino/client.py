@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 __title__ = "dino"
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "EnergieID.be"
 __license__ = "MIT"
 
@@ -108,7 +108,7 @@ class PandasDinoClient(RawDinoClient):
             except ValueError:
                 continue
             if ts.empty:
-                yield pd.Series(name=key)
+                continue
             else:
                 ts.set_index(1, drop=True, inplace=True)
                 ts = ts[0]  # go from dataframe to series
