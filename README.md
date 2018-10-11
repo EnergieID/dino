@@ -19,7 +19,7 @@ from dino import RawDinoClient
 
 client = RawDinoClient(client_id, client_secret, username, serial)
 
-client.get_data_raw(start, end)
+client.get_data(start, end)
 ```
 
 #### Get data as Pandas DataFrame
