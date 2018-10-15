@@ -11,7 +11,7 @@ URL = 'https://www.connetcontrolcenter.com/testjson/jsonanswerdino.php'
 
 class RawDinoClient:
     """API Client that returns JSON data from the server"""
-    def __init__(self, client_id, client_secret, username, serial):
+    def __init__(self, client_id, client_secret, username, serial, timeout=None):
         self.client_id = client_id
         self.client_secret = client_secret
         self.username = username
@@ -22,6 +22,7 @@ class RawDinoClient:
         #    "Accept": "application/json",
         #    "Content-Type": "application/json"
         #})
+        self.timeout = timeout
 
     def get_data(self, start, end):
         """
@@ -43,7 +44,7 @@ class RawDinoClient:
         }
 
         self.session.verify = False
-        r = self.session.post(url=URL, json=data)
+        r = self.session.post(url=URL, json=data, timeout=self.timeout)
         r.raise_for_status()
         j = r.json()
         return j
