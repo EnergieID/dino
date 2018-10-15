@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 __title__ = "dino"
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ = "EnergieID.be"
 __license__ = "MIT"
 
@@ -27,8 +27,8 @@ class RawDinoClient:
         """
         Parameters
         ----------
-        start : pd.Timestamp
-        end : pd.Timestamp
+        start : datetime.datetime
+        end : datetime.datetime
         Returns
         -------
         dict
@@ -70,8 +70,8 @@ class PandasDinoClient(RawDinoClient):
 
         Parameters
         ----------
-        start : pd.Timestamp
-        end : pd.Timestamp
+        start : datetime.datetime
+        end : datetime.datetime
         columns : [str], optional
                 select only specific entries to use
 
