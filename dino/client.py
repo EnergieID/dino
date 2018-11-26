@@ -86,7 +86,10 @@ class PandasDinoClient(RawDinoClient):
             d = {key: d[key] for key in d if key in columns}
 
         series = self._dict_to_series(d)
-        df = pd.concat(series, axis=1)
+        try:
+            df = pd.concat(series, axis=1)
+        except ValueError:
+            return pd.DataFrame()
 
         return df
 
