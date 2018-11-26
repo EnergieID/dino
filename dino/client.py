@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 __title__ = "dino"
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "EnergieID.be"
 __license__ = "MIT"
 
