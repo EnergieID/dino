@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 
 __title__ = "dino"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __author__ = "EnergieID.be"
 __license__ = "MIT"
 
@@ -90,6 +90,8 @@ class PandasDinoClient(RawDinoClient):
             df = pd.concat(series, axis=1)
         except ValueError:
             return pd.DataFrame()
+        else:
+            df.sort_index(inplace=True)
 
         return df
 
@@ -117,6 +119,7 @@ class PandasDinoClient(RawDinoClient):
                 ts.set_index(1, drop=True, inplace=True)
                 ts = ts[0]  # go from dataframe to series
                 ts.index = pd.to_datetime(ts.index, unit='s', utc=True)
+                ts.sort_index(inplace=True)
 
                 ts.index.name = None
                 ts.name = key
